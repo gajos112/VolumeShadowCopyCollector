@@ -15,5 +15,5 @@ Based on the article https://docs.microsoft.com/en-us/archive/blogs/astebner/mai
 - Windows 10 1803 April 2018 Update (all editions) includes the .NET Framework 4.7.2
 - Windows 10 1903 May 2019 Update (all editions) includes the .NET Framework 4.8
 
-The tool uses symbolic links to get access to Volume Shadows Copies, which means that artifacts like $MFT and $USNJrnl are not accessible this way. First It creates a symbolic link, collects artifacts and saves them to a new directory, which then is packed to a ZIP format. Once collection is packed, symbolic links and folders created to store collections removed. 
+The tool uses symbolic links to get access to Volume Shadows Copies, which means that artifacts like $MFT and $USNJrnl are not accessible this way. First It creates a symbolic link, collects artifacts and saves them to a new directory, which then is packed to a ZIP format. Once collection is packed, symbolic links and folders created to store collections are removed. 
 
