@@ -26,5 +26,5 @@ If the tool is launched with the admin rights, it will start collecting files.
 When all files are collected it packs the collection and removes all created files and folders.
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Admin_rights_2.png?raw=true)
 
-For each VSS detected on the system the tool creatas a seperate ZIP file with collection.
+For each VSS detected on the system, the tool creatas a seperate ZIP file with collection.
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Collections.PNG?raw=true)
