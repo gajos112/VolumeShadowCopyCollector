@@ -23,3 +23,6 @@ If administrator rights are missing the tool will throw an error:
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Admin_rights_1.png?raw=true)
 
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Admin_rights_2.png?raw=true)
+
+For each VSS detected on the system the tool creatas a seperate ZIP file with collection.
+![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Collections.png?raw=true)
