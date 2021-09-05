@@ -23,7 +23,7 @@ If administrator rights are missing the tool will throw an error:
 If the tool is launched with the admin rights, it will start collecting files.
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Admin_rights_1.png?raw=true)
 
-When all files are collected it will pack the collection and removed all created files and folders.
+When all files are collected it packs the collection and removes all created files and folders.
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Admin_rights_2.png?raw=true)
 
 For each VSS detected on the system the tool creatas a seperate ZIP file with collection.
