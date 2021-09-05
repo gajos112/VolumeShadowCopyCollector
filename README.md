@@ -17,4 +17,5 @@ Based on the article https://docs.microsoft.com/en-us/archive/blogs/astebner/mai
 
 The tool uses symbolic links to get access to Volume Shadows Copies, which means that artifacts like $MFT and $USNJrnl are not accessible this way. First It creates a symbolic link, collects artifacts and saves them to a new directory, which then is packed to a ZIP format. Once collection is packed, symbolic links and folders created to store collections are removed. 
 
+If administrator rights are missing the tool will throw an error:
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Error.png?raw=true)
