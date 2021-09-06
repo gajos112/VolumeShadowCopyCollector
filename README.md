@@ -20,7 +20,7 @@ The tool uses symbolic links to get access to Volume Shadows Copies, which means
 If administrator rights are missing the tool will throw an error:
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Error.png?raw=true)
 
-If the tool is launched with the admin rights, it will start collecting files.
+If the tool is launched with the admin rights, it will start collecting files:
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Admin_rights_1.png?raw=true)
 
 When all files are collected it packs the collection and removes all created files and folders.
