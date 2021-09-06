@@ -29,4 +29,4 @@ When all files are collected it packs the collection and removes all created fil
 For each VSS detected on the system, the tool creatas a seperate ZIP file with collection.
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Collections.PNG?raw=true)
 
-In adiditon to the collected files, you will find a log.txt file in each ZIP file. That file as the name suggestes contains all logs indicaiting what files were collected and which were not.
+In addition to the collected files, inside the ZIP file you can find a log.txt file. That file, as the name suggests, contains all logs showing which files were collected and which were not.
