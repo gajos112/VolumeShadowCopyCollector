@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Principal;
@@ -56,7 +56,7 @@ namespace VSSCollector
             {
                 File.AppendAllText(log, PrintDateUTC() + message + Environment.NewLine);
             }
-            Console.WriteLine(PrintDateUTC() + message);
+           // Console.WriteLine(PrintDateUTC() + message);
         }
 
         static void PrintOnlyLog(string pathToCollection, string message)
@@ -105,6 +105,8 @@ namespace VSSCollector
             string SYSTEM = @"\Windows\System32\config\SYSTEM";
             string AMCACHE = @"\Windows\appcompat\Programs\Amcache.hve";
 
+            long fileCount = 0;
+
             string SAM_Source = pathToVSS + SAM;
             string SAM_Destination = pathToCollection + SAM;
 
@@ -120,16 +122,35 @@ namespace VSSCollector
             string AMCACHE_Source = pathToVSS + AMCACHE;
             string AMCACHE_Destination = pathToCollection + AMCACHE;
 
+            string[] hives = new string[] { "SAM", "SOFTWARE", "SECURITY", "SYSTEM" };
+
+
             PrintGreen("Collecting: ");
             Console.WriteLine("registry hives...");
 
             PrintOnlyLog(pathToCollection, "Collecting: registry hives...");
 
-            CollectKey(pathToCollection, "SAM", SAM_Source, SAM_Destination);
-            CollectKey(pathToCollection, "SOFTWARE", SOFTWARE_Source, SOFTWARE_Destination);
-            CollectKey(pathToCollection, "SECURITY", SECURITY_Source, SECURITY_Destination);
-            CollectKey(pathToCollection, "SYSTEM", SYSTEM_Source, SYSTEM_Destination);
-            CollectKey(pathToCollection, "AMCACHE", AMCACHE_Source, AMCACHE_Destination);
+            foreach(string hive in hives)
+            {
+                try
+                {
+                    CollectKey(pathToCollection, hive, pathToVSS + @"\Windows\System32\config\" + hive, pathToCollection + @"\Windows\System32\config\" + hive);
+                    fileCount++;
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+            try
+            {
+                CollectKey(pathToCollection, AMCACHE, AMCACHE_Source, AMCACHE_Destination);
+                fileCount++;
+            }
+            catch (Exception) { }
+
+            Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " registry hives");
+            fileCount = 0;
         }
 
         static void CollectRegistryForUsers(string pathToVSS, string pathToCollection)
@@ -137,6 +158,7 @@ namespace VSSCollector
             PrintGreen("Collecting: ");
             Console.WriteLine("NTUSER.DAT...");
 
+            long fileCount = 0;
             PrintOnlyLog(pathToCollection, "Collecting: NTUSER.DAT...");
 
             string NTUSER = @"\NTUSER.DAT";
@@ -144,12 +166,24 @@ namespace VSSCollector
             foreach (string dir in directories)
             {
                 string NTUSER_Source = dir + NTUSER;
-                string NTUSER_Destination = pathToCollection + @"\Windows\Users\" + Path.GetFileName(dir) + NTUSER;
+                string NTUSER_Destination = pathToCollection + @"\Users\" + Path.GetFileName(dir) + NTUSER;
 
                 string KeyName = Path.GetFileName(dir) + NTUSER;
+                try
+                {
+                    CollectKey(pathToCollection, KeyName, NTUSER_Source, NTUSER_Destination);
+                    if (File.Exists(NTUSER_Destination))
+                    {
+                        fileCount++;
+                    }
+                }
+                catch (Exception)
+                {
 
-                CollectKey(pathToCollection, KeyName, NTUSER_Source, NTUSER_Destination);
+                }
             }
+            Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " NTUSER.DAT files");
+            fileCount = 0;
         }
 
         static void CollectKey(string pathToCollection, string KEY_Name, string KEY_Source, string KEY_Destination)
@@ -179,6 +213,8 @@ namespace VSSCollector
             PrintGreen("Collecting: ");
             Console.WriteLine("prefetch files...");
 
+            long fileCount = 0;
+
             PrintOnlyLog(pathToCollection, "Collecting: prefetch files...");
 
             string PREFETCH = @"\Windows\Prefetch\";
@@ -200,6 +236,7 @@ namespace VSSCollector
                         if (File.Exists(PREFETCH_Destination + file.Name))
                         {
                             //Console.WriteLine(PrintDateUTC() + file.Name + " collected");
+                            fileCount++;
                             PrintLog(pathToCollection, file.Name + " collected");
                         }
                     }
@@ -208,6 +245,9 @@ namespace VSSCollector
                         PrintError(pathToCollection, file.Name);
                     }
                 }
+
+                Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " Prefetch files");
+                fileCount = 0;
             }
         }
 
@@ -215,6 +255,8 @@ namespace VSSCollector
         {
             PrintGreen("Collecting: ");
             Console.WriteLine("Windows Event Logs...");
+
+            long fileCount = 0;
 
             PrintOnlyLog(pathToCollection, "Collecting: Windows Event Logs...");
 
@@ -236,6 +278,7 @@ namespace VSSCollector
                         if (File.Exists(WinEvnt_Destination + file.Name))
                         {
                             //Console.WriteLine(PrintDateUTC() + file.Name + " collected");
+                            fileCount++;
                             PrintLog(pathToCollection, file.Name + " collected");
                         }
                     }
@@ -244,6 +287,9 @@ namespace VSSCollector
                         PrintError(pathToCollection, file.Name);
                     }
                 }
+
+                Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " Windows Event Log files");
+                fileCount = 0;
             }
         }
 
@@ -251,6 +297,8 @@ namespace VSSCollector
         {
             PrintGreen("Collecting: ");
             Console.WriteLine("SRUM database...");
+
+            long fileCount = 0;
 
             PrintOnlyLog(pathToCollection, "Collecting: SRUM database...");
 
@@ -270,12 +318,16 @@ namespace VSSCollector
                     {
                         //Console.WriteLine(PrintDateUTC() + Path.GetFileName(PrintDateUTC() + SRUM_Source) + " collected");
                         PrintLog(pathToCollection, Path.GetFileName(PrintDateUTC() + SRUM_Source) + " collected");
+                        fileCount++;
                     }
                 }
                 catch (Exception)
                 {
                     PrintError(pathToCollection, "srumbdb.dat");
                 }
+
+                Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " SRUM files");
+                fileCount = 0;
             }
             else
             {
@@ -287,6 +339,8 @@ namespace VSSCollector
         {
             PrintGreen("Collecting: ");
             Console.WriteLine("XML-based Windows Scheduled Tasks...");
+
+            long fileCount = 0;
 
             PrintOnlyLog(pathToCollection, "Collecting: XML-based Windows Scheduled Tasks...");
 
@@ -312,6 +366,7 @@ namespace VSSCollector
                         {
                             File.Copy(newPath, newPath.Replace(WinTask_Source, WinTask_Destination), true);
                             //Console.WriteLine(PrintDateUTC() + Path.GetFileName(Path.GetFileName(newPath)) + " collected");
+                            fileCount++;
                             PrintLog(pathToCollection, Path.GetFileName(Path.GetFileName(newPath)) + " collected");
                         }
                         catch (Exception)
@@ -324,6 +379,9 @@ namespace VSSCollector
                 {
                     PrintError(pathToCollection, "Windows Scheduled Tasks (XML)");
                 }
+
+                Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " XML-based Windows Scheduled Tasks");
+                fileCount = 0;
             }
             else
             {
@@ -335,6 +393,8 @@ namespace VSSCollector
         {
             PrintGreen("Collecting: ");
             Console.WriteLine("Windows Scheduled Tasks...");
+
+            long fileCount = 0;
 
             PrintOnlyLog(pathToCollection, "Collecting: Windows Scheduled Tasks...");
 
@@ -358,6 +418,7 @@ namespace VSSCollector
                     {
                         File.Copy(newPath, newPath.Replace(WinTask_Source, WinTask_Destination), true);
                         //Console.WriteLine(PrintDateUTC() + Path.GetFileName(Path.GetFileName(newPath)) + " collected");
+                        fileCount++;
                         PrintLog(pathToCollection, Path.GetFileName(Path.GetFileName(newPath)) + " collected");
                     }
                 }
@@ -365,6 +426,9 @@ namespace VSSCollector
                 {
                     PrintError(pathToCollection, "Windows Scheduled Tasks (old format)");
                 }
+
+                Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " Windows Scheduled Tasks (old format)");
+                fileCount = 0;
             }
             else
             {
@@ -376,7 +440,7 @@ namespace VSSCollector
         {
             PrintGreen("Collecting: ");
             Console.WriteLine("files from the RecycleBin...");
-
+            long fileCount = 0;
             PrintOnlyLog(pathToCollection, "Collecting: files from the RecycleBin...");
 
             string RecycleBin = @"\$Recycle.Bin\";
@@ -394,18 +458,26 @@ namespace VSSCollector
                     {
                         try
                         {
-                            File.Copy(file, RecycleBin_Destination + Path.GetFileName(file));
-                            if (File.Exists(RecycleBin_Destination + Path.GetFileName(file)))
+                            long size = new System.IO.FileInfo(file).Length;
+                            if (size < 100000000)
                             {
+                                File.Copy(file, RecycleBin_Destination + Path.GetFileName(file));
+                                if (File.Exists(RecycleBin_Destination + Path.GetFileName(file)))
+                                {
                                 //Console.WriteLine(PrintDateUTC() + Path.GetFileName(file) + " collected");
-                                PrintLog(pathToCollection, "RecycleBin file " + Path.GetFileName(file) + " collected");
-                        }
+                                fileCount++;
+                                    PrintLog(pathToCollection, "RecycleBin file " + Path.GetFileName(file) + " collected");
+                                }
+                            }
                         }
                         catch(Exception)
                         {
                             PrintError(pathToCollection, Path.GetFileName(file));
                         }
                     }
+
+                Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " RecycleBin files");
+                fileCount = 0;
             }
             else
             {
@@ -415,25 +487,28 @@ namespace VSSCollector
 
         static void CollectLnkFiles(string pathToVSS, string pathToCollection)
         {
-            PrintGreen("Collecting: ");
-            Console.WriteLine("LNK files...");
+       
+            long fileCount = 0;
 
-            PrintOnlyLog(pathToCollection, "Collecting LNK files...");
+            PrintGreen("Collecting: ");
+            Console.WriteLine("Windows LNK files...");
+            PrintOnlyLog(pathToCollection, "Collecting Windows LNK files...");
 
             string LNK_Windows = @"\AppData\Roaming\Microsoft\Windows\Recent\";
             string LNK_Office = @"\AppData\Roaming\Microsoft\Office\Recent\";
 
             var directories = Directory.GetDirectories(pathToVSS + @"\Users\");
+
             foreach (string user_dir in directories)
             {
                 string LNK_Windows_Source = user_dir + LNK_Windows;
-                string LNK_Windows_Destination = pathToCollection + @"\Windows\Users\" + Path.GetFileName(user_dir) + LNK_Windows;
-    
+                string LNK_Windows_Destination = pathToCollection + @"\Users\" + Path.GetFileName(user_dir) + LNK_Windows;
+
                 if (Directory.Exists(LNK_Windows_Source))
                 {
 
                     Directory.CreateDirectory(Path.GetDirectoryName(LNK_Windows_Destination));
-                    var sourceDirectories = Directory.GetFiles(LNK_Windows_Source,"*.lnk");
+                    var sourceDirectories = Directory.GetFiles(LNK_Windows_Source,"*.*");
                     foreach (string file in sourceDirectories)
                     {
                         try
@@ -443,6 +518,7 @@ namespace VSSCollector
                             if (File.Exists(LNK_Windows_Destination + Path.GetFileName(file)))
                             {
                                 //Console.WriteLine(PrintDateUTC() + "LNK file " + Path.GetFileName(file) + " collected");
+                                fileCount++;
                                 PrintLog(pathToCollection, "LNK file " + Path.GetFileName(file) + " collected");
                             }
 
@@ -452,8 +528,52 @@ namespace VSSCollector
                             PrintError(pathToCollection, Path.GetFileName(file));
                         }
                     }
+                    
                 }
+                Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " Windows LNK files");
+                fileCount = 0;
+
             }
+
+            PrintGreen("Collecting: ");
+            Console.WriteLine("Recent LNK files...");
+            PrintOnlyLog(pathToCollection, "Collecting Recent LNK files...");
+
+            foreach (string user_dir in directories)
+            {
+                string LNK_Office_Source = user_dir + LNK_Office;
+                string LNK_Office_Destination = pathToCollection + @"\Users\" + Path.GetFileName(user_dir) + LNK_Office;
+
+                if (Directory.Exists(LNK_Office_Source))
+                {
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(LNK_Office_Destination));
+                    var sourceDirectories = Directory.GetFiles(LNK_Office_Source, "*.*");
+                    foreach (string file in sourceDirectories)
+                    {
+                        try
+                        {
+                            File.Copy(file, LNK_Office_Destination + Path.GetFileName(file));
+
+                            if (File.Exists(LNK_Office_Destination + Path.GetFileName(file)))
+                            {
+                                //Console.WriteLine(PrintDateUTC() + "LNK file " + Path.GetFileName(file) + " collected");
+                                fileCount++;
+                                PrintLog(pathToCollection, "LNK file " + Path.GetFileName(file) + " collected");
+                            }
+
+                        }
+                        catch (Exception)
+                        {
+                            PrintError(pathToCollection, Path.GetFileName(file));
+                        }
+                    }
+
+                }
+                Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " Recent LNK files");
+                fileCount = 0;
+            }
+
         }
 
         static void RemoveVSS(string pathToCollection, string pathToShadowFolder)
@@ -567,6 +687,17 @@ namespace VSSCollector
                 int i = 0;
                 string CurrentPath = Directory.GetCurrentDirectory();
                 string pathToCollection;
+
+                var process_VSSAdmin = new ProcessStartInfo("cmd.exe");
+                process_VSSAdmin.Arguments = "/c vssadmin list shadows";
+                process_VSSAdmin.WindowStyle = ProcessWindowStyle.Hidden;
+                process_VSSAdmin.UseShellExecute = false;
+                process_VSSAdmin.RedirectStandardOutput = true;
+                var p_process_VSSAdmin = Process.Start(process_VSSAdmin);
+                p_process_VSSAdmin.WaitForExit();
+                String outputp_process_VSSAdmin = p_process_VSSAdmin.StandardOutput.ReadToEnd();
+
+                Console.WriteLine(outputp_process_VSSAdmin);
 
                 var process_WMIC = new ProcessStartInfo("wmic");
                 process_WMIC.Arguments = "shadowcopy get DeviceObject";
