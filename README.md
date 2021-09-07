@@ -29,3 +29,6 @@ For each VSS detected on the system, the tool creates a separate ZIP file for ea
 ![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Collections.PNG?raw=true)
 
 In addition to the collected files, inside the ZIP file you can find a log.txt file. As the name suggests, this file contains all logs demonstrating which files were collected, and which were not.
+
+#Updates
+The current version of the tool conly ollects files from the ReccleBin that are smaller than 100MB. I discovered that otherwise the collection can be extremaly big. 
