@@ -4,7 +4,7 @@ using System.IO;
 using System.Security.Principal;
 using System.IO.Compression;
 
-namespace VSSCollector
+namespace VolumeShadowCopyCollector
 {
     class Program
     {
@@ -277,7 +277,6 @@ namespace VSSCollector
                         File.Copy(file.FullName, WinEvnt_Destination + file.Name);
                         if (File.Exists(WinEvnt_Destination + file.Name))
                         {
-                            //Console.WriteLine(PrintDateUTC() + file.Name + " collected");
                             fileCount++;
                             PrintLog(pathToCollection, file.Name + " collected");
                         }
@@ -441,6 +440,7 @@ namespace VSSCollector
             PrintGreen("Collecting: ");
             Console.WriteLine("files from the RecycleBin...");
             long fileCount = 0;
+            long errorCount = 0;
             PrintOnlyLog(pathToCollection, "Collecting: files from the RecycleBin...");
 
             string RecycleBin = @"\$Recycle.Bin\";
@@ -453,30 +453,37 @@ namespace VSSCollector
             DirectoryInfo dirPrefetch = new DirectoryInfo(RecycleBin_Source);
             if (Directory.Exists(RecycleBin_Source))
             {
-               
-                    foreach (string file in Directory.EnumerateFiles(RecycleBin_Source, "*.*", SearchOption.AllDirectories))
+
+                try
+                {
+                    foreach (string dirPath in Directory.GetDirectories(RecycleBin_Source, "*", SearchOption.AllDirectories))
                     {
-                        try
+                        Directory.CreateDirectory(dirPath.Replace(RecycleBin_Source, RecycleBin_Destination));
+                    }
+                }
+                catch (Exception) { }
+
+                try
+                {
+                    foreach (string newPath in Directory.GetFiles(RecycleBin_Source, "*", SearchOption.AllDirectories))
+                    {
+
+                        long size = new System.IO.FileInfo(newPath).Length;
+                        if (size < 100000000)
                         {
-                            long size = new System.IO.FileInfo(file).Length;
-                            if (size < 100000000)
+                            File.Copy(newPath, newPath.Replace(RecycleBin_Source, RecycleBin_Destination), true);
+                            if (File.Exists(newPath.Replace(RecycleBin_Source, RecycleBin_Destination)))
                             {
-                                File.Copy(file, RecycleBin_Destination + Path.GetFileName(file));
-                                if (File.Exists(RecycleBin_Destination + Path.GetFileName(file)))
-                                {
-                                //Console.WriteLine(PrintDateUTC() + Path.GetFileName(file) + " collected");
+                                PrintLog(pathToCollection, "RecycleBin file " + Path.GetFileName(newPath.Replace(RecycleBin_Source, RecycleBin_Destination)) + " collected");
                                 fileCount++;
-                                    PrintLog(pathToCollection, "RecycleBin file " + Path.GetFileName(file) + " collected");
-                                }
                             }
                         }
-                        catch(Exception)
-                        {
-                            PrintError(pathToCollection, Path.GetFileName(file));
-                        }
                     }
-
+                }
+                catch (Exception) { }
+              
                 Console.WriteLine(PrintDateUTC() + "collected " + fileCount + " RecycleBin files");
+                Console.WriteLine(PrintDateUTC() + "NOT collected " + errorCount + " RecycleBin files");
                 fileCount = 0;
             }
             else
@@ -724,55 +731,60 @@ namespace VSSCollector
                                     line = line.Replace(" ", "");
                                     string strCmdText;
                                     string pathShadowFolder = CurrentPath + "\\ShadowCopy" + i;
-                                    strCmdText = "/c MkLink /d " + pathShadowFolder + " " + line + "\\";
+                                    strCmdText = "/c MkLink /d \"" + pathShadowFolder + "\" " + line + "\\";
+                                    var process = System.Diagnostics.Process.Start("CMD.exe", strCmdText);
+                                    process.WaitForExit();
 
                                     Console.WriteLine("\r\n");
                                     PrintGreen("Volume Shadow Copy: ");
                                     Console.WriteLine(line);
 
-                                    var process = System.Diagnostics.Process.Start("CMD.exe", strCmdText);
-                                    process.WaitForExit();
-                                    Console.WriteLine("");
 
-                                    pathToCollection = CreateFolderForCollection(CurrentPath, i);
-
-                                    string log = pathToCollection + @"\log.txt";
-                                    using (FileStream fs = File.Create(log))
-
-                                        if (!File.Exists(log))
-                                        {
-                                            // Create a file to write to.
-                                            string createText = "Hello and Welcome" + Environment.NewLine;
-                                            File.WriteAllText(log, createText);
-                                        }
-
-                                    PrintLog(pathToCollection, "Volume Shadow Copy " + line);
-
-                                    if (pathToCollection.Length > 1)
+                                    if (Directory.Exists(pathShadowFolder))
                                     {
-                                        CollectPrefetch(pathShadowFolder, pathToCollection);
-                                        CollectRegistry(pathShadowFolder, pathToCollection);
-                                        CollectWinEvent(pathShadowFolder, pathToCollection);
-                                        CollectSrum(pathShadowFolder, pathToCollection);
-                                        CollectRegistryForUsers(pathShadowFolder, pathToCollection);
-                                        CollectWindowsTasksXML(pathShadowFolder, pathToCollection);
-                                        CollectWindowsTasksOldFormat(pathShadowFolder, pathToCollection);
-                                        CollectRecycleBin(pathShadowFolder, pathToCollection);
-                                        CollectLnkFiles(pathShadowFolder, pathToCollection);
+                                        pathToCollection = CreateFolderForCollection(CurrentPath, i);
+
+                                        string log = pathToCollection + @"\log.txt";
+                                        using (FileStream fs = File.Create(log))
+
+                                            if (!File.Exists(log))
+                                            {
+                                                string createText = "" + Environment.NewLine;
+                                                File.WriteAllText(log, createText);
+                                            }
+
+                                        PrintLog(pathToCollection, "Volume Shadow Copy " + line);
+
+                                        if (Directory.Exists(pathToCollection))
+                                        {
+
+                                            CollectPrefetch(pathShadowFolder, pathToCollection);
+                                            CollectRegistry(pathShadowFolder, pathToCollection);
+                                            CollectWinEvent(pathShadowFolder, pathToCollection);
+                                            CollectSrum(pathShadowFolder, pathToCollection);
+                                            CollectRegistryForUsers(pathShadowFolder, pathToCollection);
+                                            CollectWindowsTasksXML(pathShadowFolder, pathToCollection);
+                                            CollectWindowsTasksOldFormat(pathShadowFolder, pathToCollection);
+                                            CollectRecycleBin(pathShadowFolder, pathToCollection);
+                                            CollectLnkFiles(pathShadowFolder, pathToCollection);
+                                            RemoveVSS(pathToCollection, pathShadowFolder);
+                                            CompressCollection(pathToCollection, CurrentPath, i);
+                                            DeleteCollection(pathToCollection);
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Directory for the collection could not be created.");
+                                            RemoveVSS(pathToCollection, pathShadowFolder);
+                                        }
                                     }
-
-                                    RemoveVSS(pathToCollection, pathShadowFolder);
-                                    CompressCollection(pathToCollection, CurrentPath, i);
-                                    DeleteCollection(pathToCollection);
-
-                                    Console.WriteLine();
+                                    else
+                                    {
+                                        Console.WriteLine("Symbolic link \"" + pathShadowFolder + "\" could not be created.");
+                                    }
                                 }
                             }
                         }
-                        catch (Exception)
-                        {
-
-                        }
+                        catch (Exception) {}
 
                     } while (line != null);
                 }
