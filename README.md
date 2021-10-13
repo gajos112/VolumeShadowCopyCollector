@@ -32,3 +32,6 @@ In addition to the collected files, inside the ZIP file you can find a log.txt f
 
 # Updates
 The current version of the tool only collects files from the Recycle Bin that are smaller than 100 MB. Otherwise, I have found the collection can be extremely large.
+
+The latest version of the tool supports few arguments. You can list them using **-h/--help**.
+![alt text](https://github.com/gajos112/VolumeShadowCopyCollector/blob/main/Images/Arguments.png?raw=true)
