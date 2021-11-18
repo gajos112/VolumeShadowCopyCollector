@@ -4,7 +4,7 @@ VolumeShadowCopyCollector was designed for all DFIR analysts who want to automat
 
 The tool was designed for .NET Framework version 4.6; however, it may work on earlier versions as well, but this has not been tested. A key dependency is a package named "System.IO.Compression.ZipFile" that is supported by version 4.3.0 and newer, therefore it will not work properly on versions prior to 4.3.0.
 
-Based on the following article Windows 10 (all editions) includes the .NET Framework 4.6 as an OS component, and it is installed by default. Therefore, based upon this, the tool should work on all current Windows 10 systems.
+Based on the following article Windows 10 (all editions) includes the .NET Framework 4.6 as an OS component, and it is installed by default. Therefore, based upon this, the tool should work on all current Windows 10 systems. https://docs.microsoft.com/en-us/archive/blogs/astebner/mailbag-what-version-of-the-net-framework-is-included-in-what-version-of-the-os
 
 - Windows 10 1507 (all editions) includes the .NET Framework 4.6.0
 - Windows 10 1511 November 2015 Update (all editions) includes the .NET Framework 4.6.1
